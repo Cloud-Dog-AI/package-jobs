@@ -1,0 +1,66 @@
+# cloud_dog_jobs — Default configuration
+# Standard: PS-75 (Job & Queue Management)
+# NO SECRETS — all credentials via Vault or os.environ
+
+jobs:
+  backend: "memory"                 # memory | sql | redis | hybrid
+  database_url: ""                  # From Vault for SQL backend
+  redis_url: ""                     # From Vault for Redis backend
+
+  concurrency:
+    global_max: 10
+    per_type_max: 5
+    per_tenant_max: 3
+    per_user_max: 2
+
+  priority:
+    enabled: true
+    levels: ["LOW", "NORMAL", "HIGH", "URGENT"]
+    default: "NORMAL"
+
+  retry:
+    max_retries: 3
+    backoff_base: 2.0               # seconds
+    backoff_max: 300.0              # seconds
+    jitter: true
+    dead_letter_enabled: true
+
+  timeouts:
+    run_timeout: 3600               # seconds (per job execution)
+    claim_timeout: 60               # seconds (claim lock)
+    queue_timeout: 86400            # seconds (max time in queue)
+
+  worker:
+    poll_interval: 1.0              # seconds
+    heartbeat_interval: 30          # seconds
+    batch_size: 1
+
+  stuck_detection:
+    enabled: true
+    early_crash_threshold: 60       # seconds (no heartbeat)
+    long_stuck_threshold: 3600      # seconds
+    check_interval: 60              # seconds
+
+  ttl:
+    succeeded_retention: 604800     # 7 days
+    failed_retention: 2592000       # 30 days
+    purge_batch_size: 100
+    purge_interval: 3600            # seconds
+
+  callbacks:
+    enabled: false
+    timeout: 30                     # seconds
+    max_retries: 3
+    allowed_url_patterns: []        # URL validation patterns
+
+  idempotency:
+    enabled: true
+    key_ttl: 86400                  # seconds (24 hours)
+
+  progress:
+    enabled: true
+    update_interval: 5              # seconds (min interval between updates)
+
+  maintenance:
+    enabled: true
+    reaper_interval: 300            # seconds
