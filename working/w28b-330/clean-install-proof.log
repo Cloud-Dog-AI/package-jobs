@@ -1,0 +1,9 @@
+Successfully installed anyio-4.13.0 certifi-2026.5.20 cloud-dog-jobs-0.4.1 greenlet-3.5.1 h11-0.16.0 httpcore-1.0.9 httpx-0.28.1 idna-3.17 redis-8.0.0 sqlalchemy-2.0.50 typing-extensions-4.15.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.1.1
+[notice] To update, run: pip install --upgrade pip
+---
+Version: 0.4.1
+CapacityEnforcer: OK
+All broker modules: OK
