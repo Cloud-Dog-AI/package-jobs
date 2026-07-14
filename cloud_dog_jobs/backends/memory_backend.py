@@ -39,13 +39,20 @@ class MemoryQueueBackend(QueueBackend):
             self._jobs[job.job_id] = job
         return job.job_id
 
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Handle dequeue."""
         with self._lock:
             queued = [
                 job
                 for job in self._jobs.values()
-                if job.status == JobStatus.QUEUED and (job_type is None or job.job_type == job_type)
+                if job.status == JobStatus.QUEUED
+                and (job_type is None or job.job_type == job_type)
+                and (queue_name is None or job.queue_name == queue_name)
             ]
             queued.sort(key=lambda j: (-j.priority, j.created_at))
             return queued[:limit]

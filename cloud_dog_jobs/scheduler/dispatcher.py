@@ -48,9 +48,9 @@ class Dispatcher:
         job = self._backend.get(job_id)
         return job.status if job is not None else None
 
-    def select_eligible(self, limit: int) -> list[Job]:
+    def select_eligible(self, limit: int, queue_name: str | None = None) -> list[Job]:
         """Return jobs ordered by backend policy and filtered by deps + concurrency + resources."""
-        jobs = self._backend.dequeue(limit=limit)
+        jobs = self._backend.dequeue(limit=limit, queue_name=queue_name)
         selected: list[Job] = []
         for job in jobs:
             # --- Dependency check (PS-95 §6.3, W28D-305) ---

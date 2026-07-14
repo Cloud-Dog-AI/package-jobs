@@ -35,11 +35,18 @@ class MockQueueBackend(QueueBackend):
         self._jobs[job.job_id] = job
         return job.job_id
 
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Handle dequeue."""
         jobs = [j for j in self._jobs.values() if j.status == JobStatus.QUEUED]
         if job_type:
             jobs = [j for j in jobs if j.job_type == job_type]
+        if queue_name:
+            jobs = [j for j in jobs if j.queue_name == queue_name]
         jobs.sort(key=lambda j: (-j.priority, j.created_at))
         return jobs[:limit]
 

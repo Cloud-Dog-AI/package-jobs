@@ -35,9 +35,14 @@ class HybridQueueBackend(QueueBackend):
         self._sql.enqueue(job)
         return self._redis.enqueue(job)
 
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Handle dequeue."""
-        return self._redis.dequeue(limit, job_type)
+        return self._redis.dequeue(limit, job_type, queue_name)
 
     def claim(self, job_id: str, host_id: str, worker_id: str) -> bool:
         """Handle claim."""

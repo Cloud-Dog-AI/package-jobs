@@ -64,7 +64,13 @@ class SQLAlchemyJobRepository:
             )
         return job.job_id
 
-    def queued(self, *, limit: int, job_type: str | None = None) -> list[Job]:
+    def queued(
+        self,
+        *,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Handle queued."""
         stmt = (
             select(self.jobs)
@@ -74,6 +80,8 @@ class SQLAlchemyJobRepository:
         )
         if job_type:
             stmt = stmt.where(self.jobs.c.job_type == job_type)
+        if queue_name:
+            stmt = stmt.where(self.jobs.c.queue_name == queue_name)
         with self.engine.begin() as conn:
             rows = conn.execute(stmt).mappings().all()
         return [row_to_job(dict(r)) for r in rows]

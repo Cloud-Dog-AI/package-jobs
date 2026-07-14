@@ -18,6 +18,11 @@ import pytest
 from cloud_dog_jobs.backends.memory_backend import MemoryQueueBackend
 from cloud_dog_jobs.domain.enums import JobStatus
 from cloud_dog_jobs.domain.models import JobRequest
+from cloud_dog_jobs.extensions.fallback_policies import (
+    FallbackAction,
+    FallbackPolicy,
+    FallbackPolicyManager,
+)
 from cloud_dog_jobs.queue import JobQueue
 from cloud_dog_jobs.worker.worker import Worker
 
@@ -51,3 +56,31 @@ def test_worker_timeout_marks_status() -> None:
     with pytest.raises(TimeoutError):
         worker.run_once()
     assert queue.get(job_id).status == JobStatus.FAILED
+
+
+def test_worker_does_not_consume_its_dead_letter_queue() -> None:
+    backend = MemoryQueueBackend()
+    queue = JobQueue(backend)
+    job_id = queue.submit(JobRequest(queue_name="primary", job_type="boom", payload={"value": 1}))
+    fallback = FallbackPolicyManager(
+        policies={
+            "boom": FallbackPolicy(
+                action=FallbackAction.DEAD_LETTER,
+                dead_letter_queue="dead-letter",
+            )
+        }
+    )
+    worker = Worker(backend, queue_name="primary", fallback_policies=fallback)
+
+    def failing_handler(ctx):
+        raise RuntimeError(f"failed {ctx.job.payload['value']}")
+
+    worker.register_handler("boom", failing_handler)
+
+    assert worker.run_once() is True
+    assert queue.get(job_id).status == JobStatus.FAILED
+    dead_letters = [job for job in backend.all_jobs() if job.queue_name == "dead-letter"]
+    assert len(dead_letters) == 1
+    assert dead_letters[0].status == JobStatus.QUEUED
+    assert dead_letters[0].payload["original_payload"] == {"value": 1}
+    assert worker.run_once() is False

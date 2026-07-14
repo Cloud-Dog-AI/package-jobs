@@ -33,9 +33,14 @@ class SQLQueueBackend(QueueBackend):
         """Handle enqueue."""
         return self._repo.enqueue(job)
 
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Handle dequeue."""
-        return self._repo.queued(limit=limit, job_type=job_type)
+        return self._repo.queued(limit=limit, job_type=job_type, queue_name=queue_name)
 
     def claim(self, job_id: str, host_id: str, worker_id: str) -> bool:
         """Handle claim."""

@@ -52,6 +52,7 @@ class Worker:
         host_id: str = "localhost",
         worker_id: str = "worker-1",
         *,
+        queue_name: str | None = None,
         run_timeout_seconds: float | None = None,
         identity_authoriser: Callable[[str, str], bool] | None = None,
         fallback_policies: FallbackPolicyManager | None = None,
@@ -62,6 +63,7 @@ class Worker:
         self._backend = backend
         self._host_id = host_id
         self._worker_id = worker_id
+        self._queue_name = queue_name
         self._registry = HandlerRegistry()
         self._stopped = False
         self._audit = AuditEmitter()
@@ -96,9 +98,9 @@ class Worker:
             raise PermissionError(f"Worker identity not authorised: {self._host_id}:{self._worker_id}")
 
         if self._dispatcher is not None:
-            jobs = self._dispatcher.select_eligible(limit=1)
+            jobs = self._dispatcher.select_eligible(limit=1, queue_name=self._queue_name)
         else:
-            jobs = self._backend.dequeue(limit=1)
+            jobs = self._backend.dequeue(limit=1, queue_name=self._queue_name)
         if not jobs:
             return False
         job = jobs[0]

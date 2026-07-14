@@ -30,7 +30,12 @@ class QueueBackend(ABC):
         """Persist a job and return its identifier."""
 
     @abstractmethod
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Return queued jobs eligible for claiming."""
 
     @abstractmethod

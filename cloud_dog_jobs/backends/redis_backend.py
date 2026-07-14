@@ -221,7 +221,12 @@ class RedisQueueBackend(QueueBackend):
         self._client.zadd(self._queue_key, {job.job_id: score})
         return job.job_id
 
-    def dequeue(self, limit: int, job_type: str | None = None) -> list[Job]:
+    def dequeue(
+        self,
+        limit: int,
+        job_type: str | None = None,
+        queue_name: str | None = None,
+    ) -> list[Job]:
         """Return queued jobs eligible for claiming, highest priority first."""
         ids = self._client.zrevrange(self._queue_key, 0, max(0, limit * 3 - 1))
         jobs: list[Job] = []
@@ -229,8 +234,11 @@ class RedisQueueBackend(QueueBackend):
             if len(jobs) >= limit:
                 break
             job = self.get(job_id)
-            if job and job.status == JobStatus.QUEUED and (
-                job_type is None or job.job_type == job_type
+            if (
+                job
+                and job.status == JobStatus.QUEUED
+                and (job_type is None or job.job_type == job_type)
+                and (queue_name is None or job.queue_name == queue_name)
             ):
                 jobs.append(job)
         return jobs
