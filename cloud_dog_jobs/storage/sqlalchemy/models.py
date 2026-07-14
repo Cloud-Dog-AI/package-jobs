@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from sqlalchemy import JSON, Column, DateTime, Integer, MetaData, String, Table
+from sqlalchemy import JSON, Column, DateTime, Index, Integer, MetaData, String, Table
 
 from cloud_dog_jobs.domain.enums import JobStatus
 from cloud_dog_jobs.domain.models import Job
@@ -28,7 +28,7 @@ from cloud_dog_jobs.domain.models import Job
 
 def build_jobs_table(metadata: MetaData) -> Table:
     """Build jobs table."""
-    return Table(
+    table = Table(
         "jobs",
         metadata,
         Column("job_id", String(64), primary_key=True),
@@ -42,6 +42,14 @@ def build_jobs_table(metadata: MetaData) -> Table:
         Column("created_at", DateTime(timezone=True), nullable=False),
         Column("updated_at", DateTime(timezone=True), nullable=False),
     )
+    Index(
+        "ix_jobs_claim_queue",
+        table.c.queue_name,
+        table.c.status,
+        table.c.priority.desc(),
+        table.c.created_at,
+    )
+    return table
 
 
 def build_job_call_logs_table(metadata: MetaData) -> Table:

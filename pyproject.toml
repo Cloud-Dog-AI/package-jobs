@@ -4,7 +4,7 @@ authors = [
   { name = "Cloud-Dog, Viewdeck Engineering Limited" }
 ]
 name = "cloud-dog-jobs"
-version = "0.4.3"
+version = "0.4.4"
 description = "PS-75 Job & Queue Management for Cloud-Dog services"
 requires-python = ">=3.10"
 dependencies = [

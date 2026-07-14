@@ -44,6 +44,10 @@ class SQLAlchemyJobRepository:
         self.job_deliveries = build_job_deliveries_table(self.metadata)
         self.job_callbacks = build_job_callbacks_table(self.metadata)
         self.metadata.create_all(self.engine)
+        # create_all() does not add newly declared indexes when the jobs table
+        # already exists, so apply package-managed indexes during upgrades too.
+        for index in self.jobs.indexes:
+            index.create(self.engine, checkfirst=True)
 
     def enqueue(self, job: Job) -> str:
         """Handle enqueue."""
